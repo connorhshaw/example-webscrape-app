@@ -6,6 +6,7 @@ import numpy as np
 from dotenv import load_dotenv
 from tempfile import NamedTemporaryFile
 from io import StringIO
+import sys
 
 def get_games_on_day(day, month, year):
     website_homepage = 'https://www.basketball-reference.com'
@@ -19,6 +20,10 @@ def get_games_on_day(day, month, year):
     soup = bs.BeautifulSoup(page_data, 'html.parser')
 
     game_summaries = soup.find_all(class_='game_summary expanded nohover')
+
+    if game_summaries == []:
+        print(f'No games played on day {day}/{month}/{year}. Script terminated.')
+        sys.exit(0)
 
     game_list = []
 
@@ -96,15 +101,12 @@ def get_stats_from_game(link, game_id):
 
     df_team_1 = table_list[0].merge(table_list[1], how='left', on='Starters')
     df_team_1.drop([5], inplace=True)
-    #df_team_1.drop([len(df_team_1)], inplace=True)
     df_team_1.rename({'Starters':'Player'}, axis='columns', inplace=True)
     df_team_1['Starter'] = False
     df_team_1.loc[0:5, 'Starter'] = True
-    #df_team_1['Starter'][0:5] = True
 
     df_team_2 = table_list[2].merge(table_list[3], how='left', on='Starters')
     df_team_2.drop([5], inplace=True)
-    #df_team_2.drop([len(df_team_2)], inplace=True)
     df_team_2.rename({'Starters':'Player'}, axis='columns', inplace=True)
     df_team_2['Starter'] = False
     df_team_2.loc[0:5, 'Starter'] = True
@@ -286,11 +288,16 @@ def get_all_data_between_dates(date_1, date_2):
 
 def get_all_data_on_date(date):
     
-    game_data = get_games_between_dates(date, date)
+    try:
+        game_data = get_games_between_dates(date, date)
 
-    shot_data = get_shots_from_games(game_data[['shot_chart_link', 'game_id']])
-    stat_data = get_stats_from_games(game_data[['box_score_link', 'game_id']])
-    play_data = get_plays_from_games(game_data[['play_by_play_link', 'game_id']])
+        shot_data = get_shots_from_games(game_data[['shot_chart_link', 'game_id']])
+        stat_data = get_stats_from_games(game_data[['box_score_link', 'game_id']])
+        play_data = get_plays_from_games(game_data[['play_by_play_link', 'game_id']])
+    except Exception as e:
+        print(e)
+        sys.exit("Execution stopped due to webscraping error")
+    
 
     return_dict = {
         'games':game_data,

@@ -3,10 +3,10 @@ import datetime
 import scrape_data
 import upload_data
 
-print("script started")
+date_1 = datetime.date.today() - datetime.timedelta(days=1)
+date_2 = datetime.date.today() - datetime.timedelta(days=1)
 
-date_1 = datetime.date(2024, 1, 1)
-date_2 = datetime.date(2024, 1, 1)
+print(f'script started. pulling data from {date_1} to {date_2}')
 
 date_list = pd.date_range(start=date_1,end=date_2).to_list()
 

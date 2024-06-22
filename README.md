@@ -1,0 +1,1 @@
+Build docker container using command docker build -t webscrape-app .
